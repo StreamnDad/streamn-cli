@@ -6,6 +6,8 @@
 
 A command-line toolkit for livestreaming youth hockey games — game setup, replay management, period highlights, and story-of-the-game merging.
 
+> **Work in progress** — source code and install instructions coming soon.
+
 Built by [Streamn Dad](https://streamn.dad) to automate the repetitive parts of running a one-person livestream operation so you can focus on the game.
 
 ## What It Does
