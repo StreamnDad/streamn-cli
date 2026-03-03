@@ -2,7 +2,7 @@
   <img src="assets/logo.jpg" alt="Streamn Dad" width="200">
 </p>
 
-# streamn-cli
+# reeln-cli
 
 A command-line toolkit for livestreaming youth hockey games — game setup, replay management, period highlights, and story-of-the-game merging.
 
@@ -12,19 +12,19 @@ Built by [Streamn Dad](https://streamn.dad) to automate the repetitive parts of 
 
 ## What It Does
 
-**Pre-game setup** (`streamn-cli game init`)
+**Pre-game setup** (`reeln-cli game init`)
 - Select teams from saved profiles (with fuzzy autocomplete)
 - Generate game overrides (scoreboard, logos, rosters, platform config)
 - Initialize scoreboard text files for OBS overlays
 - Create YouTube livestream via API (optional)
 - Create game-aware directory for replay organization
 
-**Period highlights** (`streamn-cli game period <N>`)
+**Period highlights** (`reeln-cli game period <N>`)
 - Automatically find new replay files from OBS replay buffer
 - Move them into organized period directories
 - Merge period replays into a single intermission highlight video (ffmpeg concat, no re-encode)
 
-**Story of the game** (`streamn-cli game highlights`)
+**Story of the game** (`reeln-cli game highlights`)
 - Merge all period highlight videos into one full-game highlight reel
 - Double-header support with automatic game numbering
 
@@ -37,33 +37,33 @@ Built by [Streamn Dad](https://streamn.dad) to automate the repetitive parts of 
 
 ```bash
 # 1. Pre-game: set up teams, scoreboard, and game directory
-streamn-cli game init --level squirts --home roseville --away mahtomedi
+reeln-cli game init --level squirts --home roseville --away mahtomedi
 
 # 2. End of period 1: move replays + merge
-streamn-cli game period 1
+reeln-cli game period 1
 
 # 3. End of period 2
-streamn-cli game period 2
+reeln-cli game period 2
 
 # 4. End of period 3
-streamn-cli game period 3
+reeln-cli game period 3
 
 # 5. Post-game: merge all periods into story of the game
-streamn-cli game highlights
+reeln-cli game highlights
 ```
 
 ### Double-headers
 
 ```bash
 # Game 1 — normal
-streamn-cli game init --level squirts --home roseville --away mahtomedi
+reeln-cli game init --level squirts --home roseville --away mahtomedi
 
 # Game 2 — auto-detects _g2 directory
-streamn-cli game init --level squirts --home roseville --away stillwater
+reeln-cli game init --level squirts --home roseville --away stillwater
 
 # Or specify explicitly
-streamn-cli game period 1 -g 2
-streamn-cli game highlights -g 2
+reeln-cli game period 1 -g 2
+reeln-cli game highlights -g 2
 ```
 
 ## Requirements
