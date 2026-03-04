@@ -5,6 +5,10 @@ on:
     tags:
       - "v*"
 
+env:
+  NO_COLOR: "1"
+  _TYPER_FORCE_DISABLE_TERMINAL: "1"
+
 jobs:
   publish:
     runs-on: ubuntu-latest
