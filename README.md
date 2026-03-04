@@ -5,7 +5,7 @@
 # reeln
 
 [![CI](https://github.com/StreamnDad/reeln-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/StreamnDad/reeln-cli/actions/workflows/ci.yml)
-[![Docs](https://readthedocs.org/projects/reeln/badge/?version=latest)](https://reeln.readthedocs.io/)
+[![Docs](https://readthedocs.org/projects/reeln-cli/badge/?version=latest)](https://reeln-cli.readthedocs.io/)
 [![PyPI](https://img.shields.io/pypi/v/reeln)](https://pypi.org/project/reeln/)
 
 **Platform-agnostic CLI toolkit for livestreamers.**
@@ -128,7 +128,7 @@ make dev-install
 
 ## Documentation
 
-Full documentation is available at [reeln.readthedocs.io](https://reeln.readthedocs.io).
+Full documentation is available at [reeln-cli.readthedocs.io](https://reeln-cli.readthedocs.io).
 
 ## License
 
@@ -137,6 +137,6 @@ Full documentation is available at [reeln.readthedocs.io](https://reeln.readthed
 ## Links
 
 - [streamn.dad](https://streamn.dad) — project home
-- [Documentation](https://reeln.readthedocs.io) — full docs
+- [Documentation](https://reeln-cli.readthedocs.io) — full docs
 - [@streamn_dad](https://www.instagram.com/streamn_dad/) — highlights on Instagram
 - [YouTube](https://www.youtube.com/@streamn-dad) — livestreams and highlights
