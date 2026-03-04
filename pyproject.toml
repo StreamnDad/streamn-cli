@@ -33,6 +33,13 @@ docs = [
     "sphinx-copybutton>=0.5",
 ]
 
+[project.urls]
+Homepage = "https://streamn.dad"
+Documentation = "https://reeln.readthedocs.io"
+Repository = "https://github.com/StreamnDad/reeln-cli"
+Changelog = "https://github.com/StreamnDad/reeln-cli/blob/main/CHANGELOG.md"
+Issues = "https://github.com/StreamnDad/reeln-cli/issues"
+
 [project.scripts]
 reeln = "reeln.cli:app"
 

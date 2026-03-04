@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.0.25] - 2026-03-04
+
+### Fixed
+- Logo image on PyPI (use absolute URL for `assets/logo.jpg`)
+- Add project URLs to PyPI sidebar (Homepage, Docs, Repo, Changelog, Issues)
+
 ## [0.0.24] - 2026-03-04
 
 ### Fixed
