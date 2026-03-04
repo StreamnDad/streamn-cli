@@ -63,6 +63,7 @@ def _write_config(path: Path, data: dict[str, Any]) -> Path:
 # ---------------------------------------------------------------------------
 
 
+@pytest.mark.integration
 class TestCLIGameLifecycle:
     """Full CLI pipeline: init → segment → highlights."""
 

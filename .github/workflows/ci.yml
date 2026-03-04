@@ -24,7 +24,7 @@ jobs:
         run: uv python install ${{ matrix.python-version }}
 
       - name: Install dependencies
-        run: uv venv && uv pip install -e ".[dev,interactive]"
+        run: uv sync --extra dev --extra interactive
 
       - name: Lint
         run: uv run ruff check .
@@ -49,7 +49,7 @@ jobs:
         run: uv python install 3.11
 
       - name: Install dependencies
-        run: uv venv && uv pip install -e ".[docs]"
+        run: uv sync --extra docs
 
       - name: Build docs
         run: uv run python -m sphinx -W docs/ docs/_build/html

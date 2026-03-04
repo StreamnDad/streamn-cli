@@ -2399,23 +2399,27 @@ def test_render_apply_with_event_context(tmp_path: Path) -> None:
     cfg = tmp_path / "config.json"
     cfg.write_text(json.dumps(cfg_data))
 
-    result = runner.invoke(
-        app,
-        [
-            "render",
-            "apply",
-            str(clip),
-            "--render-profile",
-            "overlay",
-            "--game-dir",
-            str(game_dir),
-            "--event",
-            "ev123",
-            "--config",
-            str(cfg),
-            "--dry-run",
-        ],
-    )
+    with (
+        patch("reeln.core.ffmpeg.discover_ffmpeg", return_value=Path("/usr/bin/ffmpeg")),
+        patch("reeln.core.ffmpeg.probe_duration", return_value=10.0),
+    ):
+        result = runner.invoke(
+            app,
+            [
+                "render",
+                "apply",
+                str(clip),
+                "--render-profile",
+                "overlay",
+                "--game-dir",
+                str(game_dir),
+                "--event",
+                "ev123",
+                "--config",
+                str(cfg),
+                "--dry-run",
+            ],
+        )
     assert result.exit_code == 0
     assert "Subtitle:" in result.output
 
@@ -2556,9 +2560,12 @@ def test_render_apply_iterate_dry_run(tmp_path: Path) -> None:
         profile_names=["fullspeed", "slowmo"],
         concat_copy=True,
     )
-    with patch(
-        "reeln.core.iterations.render_iterations",
-        return_value=(iter_result, ["Dry run — no files written", "Iterations: 2 profile(s)"]),
+    with (
+        patch("reeln.core.ffmpeg.discover_ffmpeg", return_value=Path("/usr/bin/ffmpeg")),
+        patch(
+            "reeln.core.iterations.render_iterations",
+            return_value=(iter_result, ["Dry run — no files written", "Iterations: 2 profile(s)"]),
+        ),
     ):
         result = runner.invoke(
             app,
@@ -2730,9 +2737,12 @@ def test_render_short_iterate_dry_run(tmp_path: Path) -> None:
         profile_names=["fullspeed", "slowmo"],
         concat_copy=True,
     )
-    with patch(
-        "reeln.core.iterations.render_iterations",
-        return_value=(iter_result, ["Dry run — no files written", "Iterations: 2 profile(s)"]),
+    with (
+        patch("reeln.core.ffmpeg.discover_ffmpeg", return_value=Path("/usr/bin/ffmpeg")),
+        patch(
+            "reeln.core.iterations.render_iterations",
+            return_value=(iter_result, ["Dry run — no files written", "Iterations: 2 profile(s)"]),
+        ),
     ):
         result = runner.invoke(
             app,

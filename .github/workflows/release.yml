@@ -23,7 +23,7 @@ jobs:
         run: uv python install 3.11
 
       - name: Install dependencies
-        run: uv venv && uv pip install -e ".[dev,interactive]"
+        run: uv sync --extra dev --extra interactive
 
       - name: Lint
         run: uv run ruff check .

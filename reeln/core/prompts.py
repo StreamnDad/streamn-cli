@@ -133,15 +133,15 @@ def prompt_level(preset: str | None = None) -> str:
         answer = questionary.text("Team level (e.g. bantam, varsity, jv):").ask()
         if not answer:
             raise PromptAborted("Level prompt cancelled")
-        return answer.strip().lower()
+        return str(answer).strip().lower()
     if len(levels) == 1:
         return levels[0]
 
     questionary = _require_questionary()
-    answer: str | None = questionary.select("Team level:", choices=levels).ask()
-    if not answer:
+    selected: str | None = questionary.select("Team level:", choices=levels).ask()
+    if not selected:
         raise PromptAborted("Level prompt cancelled")
-    return answer
+    return str(selected)
 
 
 def prompt_team(level: str, role: str, preset: str | None = None) -> TeamProfile:
