@@ -19,6 +19,8 @@ from reeln.core.plugin_registry import (
     _is_cache_fresh,
     _parse_registry_json,
     _read_cache,
+    _resolve_entry,
+    _resolve_install_target,
     _resolve_package,
     _run_pip,
     _write_cache,
@@ -617,8 +619,19 @@ def test_run_pip_with_installer_pip() -> None:
 
 
 # ---------------------------------------------------------------------------
-# Resolve package
+# Resolve entry / package / install target
 # ---------------------------------------------------------------------------
+
+
+def test_resolve_entry_found() -> None:
+    entry = _resolve_entry("youtube", _SAMPLE_ENTRIES)
+    assert entry.name == "youtube"
+    assert entry.package == "reeln-youtube"
+
+
+def test_resolve_entry_not_found() -> None:
+    with pytest.raises(RegistryError, match="not found in the registry"):
+        _resolve_entry("nonexistent", _SAMPLE_ENTRIES)
 
 
 def test_resolve_package_found() -> None:
@@ -629,6 +642,38 @@ def test_resolve_package_found() -> None:
 def test_resolve_package_not_found() -> None:
     with pytest.raises(RegistryError, match="not found in the registry"):
         _resolve_package("nonexistent", _SAMPLE_ENTRIES)
+
+
+def test_resolve_install_target_github() -> None:
+    entry = RegistryEntry(
+        name="scoreboard",
+        package="reeln-plugin-scoreboard",
+        homepage="https://github.com/StreamnDad/reeln-plugin-scoreboard",
+    )
+    assert _resolve_install_target(entry) == "git+https://github.com/StreamnDad/reeln-plugin-scoreboard"
+
+
+def test_resolve_install_target_gitlab() -> None:
+    entry = RegistryEntry(
+        name="test",
+        package="reeln-test",
+        homepage="https://gitlab.com/user/reeln-test",
+    )
+    assert _resolve_install_target(entry) == "git+https://gitlab.com/user/reeln-test"
+
+
+def test_resolve_install_target_no_homepage_falls_back_to_package() -> None:
+    entry = RegistryEntry(name="youtube", package="reeln-youtube")
+    assert _resolve_install_target(entry) == "reeln-youtube"
+
+
+def test_resolve_install_target_non_git_homepage_falls_back_to_package() -> None:
+    entry = RegistryEntry(
+        name="custom",
+        package="reeln-custom",
+        homepage="https://example.com/custom-plugin",
+    )
+    assert _resolve_install_target(entry) == "reeln-custom"
 
 
 # ---------------------------------------------------------------------------
@@ -642,7 +687,10 @@ def test_install_plugin_success() -> None:
     proc.stdout = "Installed"
     proc.stderr = ""
 
-    with patch("reeln.core.plugin_registry.subprocess.run", return_value=proc):
+    with (
+        patch("reeln.core.plugin_registry.subprocess.run", return_value=proc),
+        patch("reeln.core.plugin_registry.get_installed_version", return_value="1.0.0"),
+    ):
         result = install_plugin("youtube", _SAMPLE_ENTRIES)
     assert result.success is True
 
@@ -667,6 +715,47 @@ def test_install_plugin_pip_failure() -> None:
     with patch("reeln.core.plugin_registry.subprocess.run", return_value=proc):
         result = install_plugin("youtube", _SAMPLE_ENTRIES)
     assert result.success is False
+
+
+def test_install_plugin_verification_fails() -> None:
+    """pip returns 0 but package not actually installed (uv no-op bug)."""
+    proc = MagicMock()
+    proc.returncode = 0
+    proc.stdout = "Audited"
+    proc.stderr = ""
+
+    with (
+        patch("reeln.core.plugin_registry.subprocess.run", return_value=proc),
+        patch("reeln.core.plugin_registry.get_installed_version", return_value=""),
+    ):
+        result = install_plugin("youtube", _SAMPLE_ENTRIES)
+    assert result.success is False
+    assert "not found after install" in result.error
+
+
+def test_install_plugin_uses_git_homepage() -> None:
+    """Plugins with GitHub homepage install via git+URL."""
+    entries = [
+        RegistryEntry(
+            name="scoreboard",
+            package="reeln-plugin-streamn-scoreboard",
+            homepage="https://github.com/StreamnDad/reeln-plugin-streamn-scoreboard",
+        ),
+    ]
+    proc = MagicMock()
+    proc.returncode = 0
+    proc.stdout = "Installed"
+    proc.stderr = ""
+
+    with (
+        patch("reeln.core.plugin_registry.subprocess.run", return_value=proc) as mock_run,
+        patch("reeln.core.plugin_registry.get_installed_version", return_value="0.1.0"),
+    ):
+        result = install_plugin("scoreboard", entries)
+    assert result.success is True
+    # Verify git+URL was passed to pip
+    cmd = mock_run.call_args[0][0]
+    assert any("git+https://github.com/" in arg for arg in cmd)
 
 
 def test_update_plugin_success() -> None:

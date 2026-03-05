@@ -359,15 +359,35 @@ def _run_pip(
         )
 
 
-def _resolve_package(name: str, entries: list[RegistryEntry]) -> str:
-    """Map a plugin name to its PyPI package name.
+def _resolve_entry(name: str, entries: list[RegistryEntry]) -> RegistryEntry:
+    """Look up a registry entry by plugin name.
 
     Raises ``RegistryError`` if the plugin is not in the registry.
     """
     for entry in entries:
         if entry.name == name:
-            return entry.package
+            return entry
     raise RegistryError(f"Plugin {name!r} not found in the registry")
+
+
+def _resolve_package(name: str, entries: list[RegistryEntry]) -> str:
+    """Map a plugin name to its PyPI package name.
+
+    Raises ``RegistryError`` if the plugin is not in the registry.
+    """
+    return _resolve_entry(name, entries).package
+
+
+def _resolve_install_target(entry: RegistryEntry) -> str:
+    """Return the pip install target for a registry entry.
+
+    Uses ``git+{homepage}`` when the homepage is a GitHub/GitLab URL,
+    otherwise falls back to the PyPI package name.
+    """
+    homepage = entry.homepage
+    if homepage and ("github.com/" in homepage or "gitlab.com/" in homepage):
+        return f"git+{homepage}"
+    return entry.package
 
 
 def install_plugin(
@@ -378,8 +398,21 @@ def install_plugin(
     installer: str = "",
 ) -> PipResult:
     """Install a plugin by name using the registry to resolve the package."""
-    package = _resolve_package(name, entries)
-    return _run_pip([package], dry_run=dry_run, installer=installer)
+    entry = _resolve_entry(name, entries)
+    target = _resolve_install_target(entry)
+    result = _run_pip([target], dry_run=dry_run, installer=installer)
+
+    # Verify the package is actually installed (uv can return 0 for no-ops)
+    if result.success and not dry_run:
+        if not get_installed_version(entry.package):
+            return PipResult(
+                success=False,
+                package=entry.package,
+                action="install",
+                error=f"Package '{entry.package}' not found after install. "
+                f"Check that the repository has a valid Python package.",
+            )
+    return result
 
 
 def update_plugin(
@@ -390,11 +423,12 @@ def update_plugin(
     installer: str = "",
 ) -> PipResult:
     """Update a plugin to the latest version."""
-    package = _resolve_package(name, entries)
-    result = _run_pip(["--upgrade", package], dry_run=dry_run, installer=installer)
+    entry = _resolve_entry(name, entries)
+    target = _resolve_install_target(entry)
+    result = _run_pip(["--upgrade", target], dry_run=dry_run, installer=installer)
     result = PipResult(
         success=result.success,
-        package=package,
+        package=entry.package,
         action="update" if not dry_run else "dry-run",
         output=result.output,
         error=result.error,
