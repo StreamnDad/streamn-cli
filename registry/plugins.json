@@ -10,6 +10,16 @@
       "min_reeln_version": "0.0.19",
       "author": "StreamnDad",
       "license": "AGPL-3.0"
+    },
+    {
+      "name": "google",
+      "package": "reeln-plugin-google",
+      "description": "Google platform integration — YouTube livestream creation, uploads, playlists, and comments",
+      "capabilities": ["hook:ON_GAME_INIT"],
+      "homepage": "https://github.com/StreamnDad/reeln-plugin-google",
+      "min_reeln_version": "0.0.19",
+      "author": "StreamnDad",
+      "license": "AGPL-3.0"
     }
   ]
 }
