@@ -14,12 +14,14 @@ from reeln.core.prompts import (
     create_team_interactive,
     prompt_away_team,
     prompt_date,
+    prompt_description,
     prompt_game_time,
     prompt_home_team,
     prompt_level,
     prompt_period_length,
     prompt_sport,
     prompt_team,
+    prompt_thumbnail,
     prompt_venue,
 )
 from reeln.models.team import TeamProfile
@@ -474,6 +476,78 @@ def test_prompt_period_length_cancelled_raises(mock_questionary: MagicMock) -> N
 
 
 # ---------------------------------------------------------------------------
+# prompt_description
+# ---------------------------------------------------------------------------
+
+
+def test_prompt_description_preset_returns_immediately() -> None:
+    assert prompt_description(preset="Big game") == "Big game"
+
+
+def test_prompt_description_preset_empty_string_returns_immediately() -> None:
+    assert prompt_description(preset="") == ""
+
+
+def test_prompt_description_interactive(mock_questionary: MagicMock) -> None:
+    mock_questionary.text.return_value.ask.return_value = "Championship game"
+    with patch("reeln.core.prompts._require_questionary", return_value=mock_questionary):
+        result = prompt_description()
+    assert result == "Championship game"
+
+
+def test_prompt_description_skipped_returns_empty(mock_questionary: MagicMock) -> None:
+    """Description is optional — empty string is accepted."""
+    mock_questionary.text.return_value.ask.return_value = ""
+    with patch("reeln.core.prompts._require_questionary", return_value=mock_questionary):
+        result = prompt_description()
+    assert result == ""
+
+
+def test_prompt_description_cancelled_returns_empty(mock_questionary: MagicMock) -> None:
+    """Description is optional — cancellation returns empty, not PromptAborted."""
+    mock_questionary.text.return_value.ask.return_value = None
+    with patch("reeln.core.prompts._require_questionary", return_value=mock_questionary):
+        result = prompt_description()
+    assert result == ""
+
+
+# ---------------------------------------------------------------------------
+# prompt_thumbnail
+# ---------------------------------------------------------------------------
+
+
+def test_prompt_thumbnail_preset_returns_immediately() -> None:
+    assert prompt_thumbnail(preset="/tmp/thumb.jpg") == "/tmp/thumb.jpg"
+
+
+def test_prompt_thumbnail_preset_empty_string_returns_immediately() -> None:
+    assert prompt_thumbnail(preset="") == ""
+
+
+def test_prompt_thumbnail_interactive(mock_questionary: MagicMock) -> None:
+    mock_questionary.text.return_value.ask.return_value = "/img/banner.png"
+    with patch("reeln.core.prompts._require_questionary", return_value=mock_questionary):
+        result = prompt_thumbnail()
+    assert result == "/img/banner.png"
+
+
+def test_prompt_thumbnail_skipped_returns_empty(mock_questionary: MagicMock) -> None:
+    """Thumbnail is optional — empty string is accepted."""
+    mock_questionary.text.return_value.ask.return_value = ""
+    with patch("reeln.core.prompts._require_questionary", return_value=mock_questionary):
+        result = prompt_thumbnail()
+    assert result == ""
+
+
+def test_prompt_thumbnail_cancelled_returns_empty(mock_questionary: MagicMock) -> None:
+    """Thumbnail is optional — cancellation returns empty, not PromptAborted."""
+    mock_questionary.text.return_value.ask.return_value = None
+    with patch("reeln.core.prompts._require_questionary", return_value=mock_questionary):
+        result = prompt_thumbnail()
+    assert result == ""
+
+
+# ---------------------------------------------------------------------------
 # collect_game_info_interactive
 # ---------------------------------------------------------------------------
 
@@ -488,6 +562,8 @@ def test_collect_all_presets_no_import_needed() -> None:
         venue="OVAL",
         game_time="7:00 PM",
         period_length=15,
+        description="Big game",
+        thumbnail="/tmp/thumb.jpg",
     )
     assert result["home"] == "eagles"
     assert result["away"] == "bears"
@@ -496,6 +572,8 @@ def test_collect_all_presets_no_import_needed() -> None:
     assert result["venue"] == "OVAL"
     assert result["game_time"] == "7:00 PM"
     assert result["period_length"] == 15
+    assert result["description"] == "Big game"
+    assert result["thumbnail"] == "/tmp/thumb.jpg"
     assert result["home_profile"] is None
     assert result["away_profile"] is None
 
@@ -510,6 +588,8 @@ def test_collect_no_profiles_when_both_preset() -> None:
         venue="OVAL",
         game_time="7:00 PM",
         period_length=15,
+        description="",
+        thumbnail="",
     )
     assert result["home_profile"] is None
     assert result["away_profile"] is None
@@ -528,6 +608,8 @@ def test_collect_with_profiles(mock_questionary: MagicMock) -> None:
         patch("reeln.core.prompts.prompt_venue", return_value="OVAL"),
         patch("reeln.core.prompts.prompt_game_time", return_value="7:00 PM"),
         patch("reeln.core.prompts.prompt_period_length", return_value=15),
+        patch("reeln.core.prompts.prompt_description", return_value="Test desc"),
+        patch("reeln.core.prompts.prompt_thumbnail", return_value="/tmp/t.jpg"),
     ):
         result = collect_game_info_interactive()
 
@@ -540,6 +622,8 @@ def test_collect_with_profiles(mock_questionary: MagicMock) -> None:
     assert result["venue"] == "OVAL"
     assert result["game_time"] == "7:00 PM"
     assert result["period_length"] == 15
+    assert result["description"] == "Test desc"
+    assert result["thumbnail"] == "/tmp/t.jpg"
 
 
 def test_collect_with_profiles_and_presets() -> None:
@@ -554,6 +638,8 @@ def test_collect_with_profiles_and_presets() -> None:
         patch("reeln.core.prompts.prompt_venue", return_value=""),
         patch("reeln.core.prompts.prompt_game_time", return_value=""),
         patch("reeln.core.prompts.prompt_period_length", return_value=15),
+        patch("reeln.core.prompts.prompt_description", return_value=""),
+        patch("reeln.core.prompts.prompt_thumbnail", return_value=""),
     ):
         result = collect_game_info_interactive(
             home="roseville",
@@ -584,6 +670,8 @@ def test_collect_with_home_prompted_away_preset() -> None:
         patch("reeln.core.prompts.prompt_venue", return_value=""),
         patch("reeln.core.prompts.prompt_game_time", return_value=""),
         patch("reeln.core.prompts.prompt_period_length", return_value=15),
+        patch("reeln.core.prompts.prompt_description", return_value=""),
+        patch("reeln.core.prompts.prompt_thumbnail", return_value=""),
     ):
         result = collect_game_info_interactive(
             home=None,
@@ -624,6 +712,8 @@ def test_collect_all_interactive() -> None:
         patch("reeln.core.prompts.prompt_venue", return_value="OVAL"),
         patch("reeln.core.prompts.prompt_game_time", return_value="7:00 PM"),
         patch("reeln.core.prompts.prompt_period_length", return_value=15),
+        patch("reeln.core.prompts.prompt_description", return_value="Game day"),
+        patch("reeln.core.prompts.prompt_thumbnail", return_value=""),
     ):
         result = collect_game_info_interactive()
 
@@ -634,5 +724,7 @@ def test_collect_all_interactive() -> None:
     assert result["venue"] == "OVAL"
     assert result["game_time"] == "7:00 PM"
     assert result["period_length"] == 15
+    assert result["description"] == "Game day"
+    assert result["thumbnail"] == ""
     assert result["home_profile"] is home_prof
     assert result["away_profile"] is away_prof

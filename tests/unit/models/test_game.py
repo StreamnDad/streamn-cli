@@ -36,6 +36,8 @@ def test_game_info_defaults() -> None:
     assert gi.venue == ""
     assert gi.game_time == ""
     assert gi.period_length == 0
+    assert gi.description == ""
+    assert gi.thumbnail == ""
 
 
 def test_game_info_custom_fields() -> None:
@@ -53,6 +55,19 @@ def test_game_info_custom_fields() -> None:
     assert gi.venue == "Staples Center"
     assert gi.game_time == "7:00 PM"
     assert gi.period_length == 12
+
+
+def test_game_info_with_description_and_thumbnail() -> None:
+    gi = GameInfo(
+        date="2026-03-04",
+        home_team="eagles",
+        away_team="hawks",
+        sport="hockey",
+        description="Big game tonight",
+        thumbnail="/tmp/thumb.jpg",
+    )
+    assert gi.description == "Big game tonight"
+    assert gi.thumbnail == "/tmp/thumb.jpg"
 
 
 # ---------------------------------------------------------------------------
@@ -221,6 +236,8 @@ def test_game_info_to_dict() -> None:
         "venue": "OVAL",
         "game_time": "",
         "period_length": 0,
+        "description": "",
+        "thumbnail": "",
     }
 
 
@@ -261,6 +278,8 @@ def test_dict_to_game_info_defaults() -> None:
     assert gi.venue == ""
     assert gi.game_time == ""
     assert gi.period_length == 0
+    assert gi.description == ""
+    assert gi.thumbnail == ""
 
 
 def test_dict_to_game_info_legacy_rink_fallback() -> None:
@@ -312,6 +331,34 @@ def test_dict_to_game_info_with_period_length() -> None:
     assert gi.period_length == 12
 
 
+def test_game_info_to_dict_with_description_and_thumbnail() -> None:
+    gi = GameInfo(
+        date="2026-03-04",
+        home_team="a",
+        away_team="b",
+        sport="hockey",
+        description="Big game",
+        thumbnail="/tmp/thumb.jpg",
+    )
+    d = game_info_to_dict(gi)
+    assert d["description"] == "Big game"
+    assert d["thumbnail"] == "/tmp/thumb.jpg"
+
+
+def test_dict_to_game_info_with_description_and_thumbnail() -> None:
+    d = {
+        "date": "2026-03-04",
+        "home_team": "a",
+        "away_team": "b",
+        "sport": "hockey",
+        "description": "Big game",
+        "thumbnail": "/tmp/thumb.jpg",
+    }
+    gi = dict_to_game_info(d)
+    assert gi.description == "Big game"
+    assert gi.thumbnail == "/tmp/thumb.jpg"
+
+
 def test_game_info_round_trip() -> None:
     gi = GameInfo(
         date="2026-03-01",
@@ -322,6 +369,8 @@ def test_game_info_round_trip() -> None:
         venue="Stadium",
         game_time="3:00 PM",
         period_length=45,
+        description="Championship match",
+        thumbnail="/img/thumb.png",
     )
     assert dict_to_game_info(game_info_to_dict(gi)) == gi
 

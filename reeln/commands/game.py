@@ -137,6 +137,8 @@ def init(
     game_time: str = typer.Option("", "--game-time", "-t", help="Game time (e.g. '7:00 PM')."),
     level: str | None = typer.Option(None, "--level", "-l", help="Team level for profile lookup."),
     period_length: int = typer.Option(0, "--period-length", help="Period/segment length in minutes (0 = not set)."),
+    description: str = typer.Option("", "--description", "-d", help="Broadcast description."),
+    thumbnail: str = typer.Option("", "--thumbnail", help="Thumbnail image file path."),
     output_dir: Path | None = typer.Option(None, "--output-dir", "-o", help="Base output directory."),
     profile: str | None = typer.Option(None, "--profile", help="Named config profile."),
     config_path: Path | None = typer.Option(None, "--config", help="Explicit config file path."),
@@ -167,6 +169,8 @@ def init(
                 venue=None if venue == "" else venue,
                 game_time=None if game_time == "" else game_time,
                 period_length=None if period_length == 0 else period_length,
+                description=None if description == "" else description,
+                thumbnail=None if thumbnail == "" else thumbnail,
             )
         except PromptAborted:
             raise typer.Abort() from None
@@ -184,6 +188,8 @@ def init(
             venue=info["venue"],
             game_time=info["game_time"],
             period_length=info["period_length"],
+            description=info["description"],
+            thumbnail=info["thumbnail"],
         )
     else:
         # Non-interactive mode — use CLI args directly
@@ -211,6 +217,8 @@ def init(
             venue=venue,
             game_time=game_time,
             period_length=period_length,
+            description=description,
+            thumbnail=thumbnail,
         )
 
     try:

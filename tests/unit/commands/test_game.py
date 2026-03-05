@@ -280,6 +280,8 @@ def _mock_collect(**overrides: object) -> dict[str, object]:
         "venue": "",
         "game_time": "",
         "period_length": 0,
+        "description": "",
+        "thumbnail": "",
         "home_profile": None,
         "away_profile": None,
     }

@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.0.28] - 2026-03-04
+
+### Added
+- `--description` / `-d` flag on `game init` for broadcast description
+- `--thumbnail` flag on `game init` for thumbnail image path
+- `GameInfo.description` and `GameInfo.thumbnail` fields
+- Interactive prompts for description and thumbnail (both optional)
+
 ## [0.0.27] - 2026-03-04
 
 ### Fixed

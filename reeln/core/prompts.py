@@ -202,6 +202,34 @@ def create_team_interactive(level: str, role: str) -> TeamProfile:
     return profile
 
 
+def prompt_description(preset: str | None = None) -> str:
+    """Prompt for a broadcast description, or return *preset*.
+
+    Description is optional — an empty answer is accepted (returns ``""``).
+    """
+    if preset is not None:
+        return preset
+    questionary = _require_questionary()
+    answer: str | None = questionary.text("Broadcast description (optional):").ask()
+    if answer is None:
+        return ""
+    return answer
+
+
+def prompt_thumbnail(preset: str | None = None) -> str:
+    """Prompt for a thumbnail file path, or return *preset*.
+
+    Thumbnail is optional — an empty answer is accepted (returns ``""``).
+    """
+    if preset is not None:
+        return preset
+    questionary = _require_questionary()
+    answer: str | None = questionary.text("Thumbnail image path (optional):").ask()
+    if answer is None:
+        return ""
+    return answer
+
+
 def prompt_period_length(preset: int | None = None) -> int:
     """Prompt for the period/segment length in minutes, or return *preset*.
 
@@ -237,6 +265,8 @@ def collect_game_info_interactive(
     venue: str | None = None,
     game_time: str | None = None,
     period_length: int | None = None,
+    description: str | None = None,
+    thumbnail: str | None = None,
 ) -> dict[str, Any]:
     """Collect all game info fields, prompting only for missing values.
 
@@ -280,5 +310,7 @@ def collect_game_info_interactive(
     result["venue"] = prompt_venue(preset=venue)
     result["game_time"] = prompt_game_time(preset=game_time)
     result["period_length"] = prompt_period_length(preset=period_length)
+    result["description"] = prompt_description(preset=description)
+    result["thumbnail"] = prompt_thumbnail(preset=thumbnail)
 
     return result

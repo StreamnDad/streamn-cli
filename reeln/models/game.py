@@ -18,6 +18,8 @@ class GameInfo:
     venue: str = ""
     game_time: str = ""
     period_length: int = 0
+    description: str = ""
+    thumbnail: str = ""
 
 
 @dataclass
@@ -77,6 +79,8 @@ def game_info_to_dict(info: GameInfo) -> dict[str, Any]:
         "venue": info.venue,
         "game_time": info.game_time,
         "period_length": info.period_length,
+        "description": info.description,
+        "thumbnail": info.thumbnail,
     }
 
 
@@ -91,6 +95,8 @@ def dict_to_game_info(data: dict[str, Any]) -> GameInfo:
         venue=str(data.get("venue", data.get("rink", ""))),
         game_time=str(data.get("game_time", "")),
         period_length=int(data.get("period_length", 0)),
+        description=str(data.get("description", "")),
+        thumbnail=str(data.get("thumbnail", "")),
     )
 
 
