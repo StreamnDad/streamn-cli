@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/StreamnDad/reeln-cli/main/assets/logo.jpg" alt="reeln" width="200">
+  <img src="assets/logo.jpg" alt="reeln" width="200">
 </p>
 
 # reeln
