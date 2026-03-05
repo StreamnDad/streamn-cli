@@ -404,15 +404,14 @@ def install_plugin(
     result = _run_pip([target], dry_run=dry_run, installer=installer)
 
     # Verify the package is actually installed (uv can return 0 for no-ops)
-    if result.success and not dry_run:
-        if not get_installed_version(entry.package):
-            return PipResult(
-                success=False,
-                package=entry.package,
-                action="install",
-                error=f"Package '{entry.package}' not found after install. "
-                f"Check that the repository has a valid Python package.",
-            )
+    if result.success and not dry_run and not get_installed_version(entry.package):
+        return PipResult(
+            success=False,
+            package=entry.package,
+            action="install",
+            error=f"Package '{entry.package}' not found after install. "
+            f"Check that the repository has a valid Python package.",
+        )
     return result
 
 
