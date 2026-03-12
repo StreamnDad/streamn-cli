@@ -40,6 +40,18 @@ def clean_env(monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.delenv(var, raising=False)
 
 
+@pytest.fixture(autouse=True)
+def _no_real_plugins() -> Generator[None, None, None]:
+    """Prevent real plugins from loading during integration tests.
+
+    Without this, activate_plugins() loads plugins from the user's real
+    config (e.g. google with create_livestream=true), causing side effects
+    like creating actual YouTube livestreams on every test run.
+    """
+    with patch("reeln.plugins.loader.load_enabled_plugins", return_value={}):
+        yield
+
+
 # ---------------------------------------------------------------------------
 # Game info fixtures
 # ---------------------------------------------------------------------------
