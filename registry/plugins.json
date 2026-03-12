@@ -15,7 +15,7 @@
       "name": "google",
       "package": "reeln-plugin-google",
       "description": "Google platform integration — YouTube livestream creation, uploads, playlists, and comments",
-      "capabilities": ["hook:ON_GAME_INIT"],
+      "capabilities": ["hook:ON_GAME_INIT", "hook:ON_GAME_READY"],
       "homepage": "https://github.com/StreamnDad/reeln-plugin-google",
       "min_reeln_version": "0.0.19",
       "author": "StreamnDad",
