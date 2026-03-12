@@ -170,8 +170,13 @@ def init_game(
     ctx = HookContext(hook=Hook.ON_GAME_INIT, data=hook_data)
     get_registry().emit(Hook.ON_GAME_INIT, ctx)
 
+    # Second pass: plugins can now read shared data written by other plugins
+    # (e.g. Google reads game_image/livestream_metadata written by OpenAI)
+    ready_ctx = HookContext(hook=Hook.ON_GAME_READY, data=hook_data, shared=ctx.shared)
+    get_registry().emit(Hook.ON_GAME_READY, ready_ctx)
+
     # Persist livestream URLs written by plugins (e.g. Google, Meta)
-    livestreams = ctx.shared.get("livestreams", {})
+    livestreams = ready_ctx.shared.get("livestreams", {})
     if livestreams:
         state = load_game_state(game_dir)
         state.livestreams = dict(livestreams)

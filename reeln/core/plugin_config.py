@@ -72,6 +72,23 @@ def seed_defaults(
     return result
 
 
+def merge_all_plugin_defaults(
+    enabled: list[str],
+    existing_settings: dict[str, dict[str, Any]],
+) -> dict[str, dict[str, Any]]:
+    """Merge schema defaults for all *enabled* plugins into *existing_settings*.
+
+    Returns a new dict — *existing_settings* is not mutated.
+    Plugins that are not installed or have no schema are silently skipped.
+    """
+    result = existing_settings
+    for name in enabled:
+        schema = extract_schema_by_name(name)
+        if schema is not None:
+            result = seed_defaults(name, schema, result)
+    return result
+
+
 def validate_plugin_settings(
     plugin_name: str,
     settings: dict[str, Any],

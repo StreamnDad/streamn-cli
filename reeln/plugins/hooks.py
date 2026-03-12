@@ -16,6 +16,7 @@ class Hook(Enum):
     ON_EVENT_CREATED = "on_event_created"
     ON_EVENT_TAGGED = "on_event_tagged"
     ON_GAME_INIT = "on_game_init"
+    ON_GAME_READY = "on_game_ready"
     ON_GAME_FINISH = "on_game_finish"
     ON_HIGHLIGHTS_MERGED = "on_highlights_merged"
     ON_SEGMENT_START = "on_segment_start"

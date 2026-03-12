@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock, patch
@@ -265,6 +266,22 @@ def test_load_enabled_plugins_error_continues() -> None:
 
     assert "good" in result
     assert "bad" not in result
+
+
+def test_load_enabled_plugins_not_installed_logs_debug(caplog: pytest.LogCaptureFixture) -> None:
+    """Plugins that are not installed (no entry point) log at debug, not warning."""
+    with (
+        patch("reeln.plugins.loader.importlib.metadata.entry_points", return_value=[]),
+        caplog.at_level(logging.DEBUG, logger="reeln.plugins.loader"),
+    ):
+        result = load_enabled_plugins(["missing"], [])
+
+    assert "missing" not in result
+    # Should appear in debug log, not warning
+    assert any(
+        "not installed" in r.message and r.levelno == logging.DEBUG
+        for r in caplog.records
+    )
 
 
 def test_load_enabled_plugins_with_settings() -> None:

@@ -24,7 +24,7 @@ def show(
 ) -> None:
     """Display current configuration."""
     config = load_config(path=path, profile=profile)
-    data = config_to_dict(config)
+    data = config_to_dict(config, full=True)
     typer.echo(json.dumps(data, indent=2))
 
 

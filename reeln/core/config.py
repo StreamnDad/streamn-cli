@@ -106,8 +106,14 @@ def default_config() -> AppConfig:
 # ---------------------------------------------------------------------------
 
 
-def config_to_dict(config: AppConfig) -> dict[str, Any]:
-    """Serialize an ``AppConfig`` to a JSON-compatible dict."""
+def config_to_dict(config: AppConfig, *, full: bool = False) -> dict[str, Any]:
+    """Serialize an ``AppConfig`` to a JSON-compatible dict.
+
+    When *full* is ``True`` every section is included with its current
+    value (used by ``config show``).  When ``False`` (the default),
+    sections that equal their defaults are omitted so that
+    ``save_config`` writes a minimal file.
+    """
     d: dict[str, Any] = {
         "config_version": config.config_version,
         "sport": config.sport,
@@ -126,27 +132,38 @@ def config_to_dict(config: AppConfig) -> dict[str, Any]:
             "temp_dir": str(config.paths.temp_dir) if config.paths.temp_dir else None,
         },
     }
-    if config.render_profiles:
+
+    if full or config.render_profiles:
         d["render_profiles"] = {
             name: render_profile_to_dict(profile) for name, profile in config.render_profiles.items()
         }
-    if config.iterations.mappings:
+    if full or config.iterations.mappings:
         d["iterations"] = iteration_config_to_dict(config.iterations)
-    if config.orchestration.upload_bitrate_kbps or not config.orchestration.sequential:
+    if full or config.orchestration.upload_bitrate_kbps or not config.orchestration.sequential:
         d["orchestration"] = {
             "upload_bitrate_kbps": config.orchestration.upload_bitrate_kbps,
             "sequential": config.orchestration.sequential,
         }
-    if config.plugins.enabled or config.plugins.disabled or config.plugins.settings or config.plugins.registry_url:
-        d["plugins"] = {}
-        if config.plugins.enabled:
-            d["plugins"]["enabled"] = list(config.plugins.enabled)
-        if config.plugins.disabled:
-            d["plugins"]["disabled"] = list(config.plugins.disabled)
-        if config.plugins.settings:
-            d["plugins"]["settings"] = dict(config.plugins.settings)
-        if config.plugins.registry_url:
-            d["plugins"]["registry_url"] = config.plugins.registry_url
+
+    has_plugins = (
+        config.plugins.enabled
+        or config.plugins.disabled
+        or config.plugins.settings
+        or config.plugins.registry_url
+    )
+    if full or has_plugins:
+        settings = dict(config.plugins.settings)
+        if full and config.plugins.enabled:
+            from reeln.core.plugin_config import merge_all_plugin_defaults
+
+            settings = merge_all_plugin_defaults(config.plugins.enabled, settings)
+        d["plugins"] = {
+            "enabled": list(config.plugins.enabled),
+            "disabled": list(config.plugins.disabled),
+            "settings": settings,
+            "registry_url": config.plugins.registry_url,
+        }
+
     return d
 
 

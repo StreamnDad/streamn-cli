@@ -335,10 +335,10 @@ def test_config_to_dict_with_plugins_enabled_only() -> None:
         plugins=PluginsConfig(enabled=["youtube"]),
     )
     d = config_to_dict(cfg)
-    assert "plugins" in d
     assert d["plugins"]["enabled"] == ["youtube"]
-    assert "disabled" not in d["plugins"]
-    assert "settings" not in d["plugins"]
+    assert d["plugins"]["disabled"] == []
+    assert d["plugins"]["settings"] == {}
+    assert d["plugins"]["registry_url"] == ""
 
 
 def test_config_to_dict_with_plugins_disabled_only() -> None:
@@ -346,10 +346,10 @@ def test_config_to_dict_with_plugins_disabled_only() -> None:
         plugins=PluginsConfig(disabled=["llm"]),
     )
     d = config_to_dict(cfg)
-    assert "plugins" in d
-    assert "enabled" not in d["plugins"]
+    assert d["plugins"]["enabled"] == []
     assert d["plugins"]["disabled"] == ["llm"]
-    assert "settings" not in d["plugins"]
+    assert d["plugins"]["settings"] == {}
+    assert d["plugins"]["registry_url"] == ""
 
 
 def test_config_to_dict_with_plugins_settings_only() -> None:
@@ -357,10 +357,10 @@ def test_config_to_dict_with_plugins_settings_only() -> None:
         plugins=PluginsConfig(settings={"youtube": {"api_key": "test"}}),
     )
     d = config_to_dict(cfg)
-    assert "plugins" in d
-    assert "enabled" not in d["plugins"]
-    assert "disabled" not in d["plugins"]
+    assert d["plugins"]["enabled"] == []
+    assert d["plugins"]["disabled"] == []
     assert d["plugins"]["settings"]["youtube"]["api_key"] == "test"
+    assert d["plugins"]["registry_url"] == ""
 
 
 def test_config_to_dict_with_plugins_registry_url() -> None:
@@ -372,18 +372,82 @@ def test_config_to_dict_with_plugins_registry_url() -> None:
     assert d["plugins"]["registry_url"] == "https://example.com/reg.json"
 
 
-def test_config_to_dict_plugins_registry_url_empty_omitted() -> None:
+def test_config_to_dict_plugins_registry_url_empty_included() -> None:
+    """When plugins section is present, registry_url is always included."""
     cfg = AppConfig(
         plugins=PluginsConfig(enabled=["youtube"]),
     )
     d = config_to_dict(cfg)
-    assert "registry_url" not in d["plugins"]
+    assert d["plugins"]["registry_url"] == ""
 
 
 def test_config_to_dict_default_plugins_omitted() -> None:
     cfg = AppConfig()
     d = config_to_dict(cfg)
     assert "plugins" not in d
+
+
+# ---------------------------------------------------------------------------
+# config_to_dict full=True (for config show)
+# ---------------------------------------------------------------------------
+
+
+def test_config_to_dict_full_includes_all_sections() -> None:
+    """full=True includes every section even when values are defaults."""
+    cfg = AppConfig()
+    d = config_to_dict(cfg, full=True)
+    assert d["render_profiles"] == {}
+    assert d["iterations"] == {}
+    assert d["orchestration"] == {"upload_bitrate_kbps": 0, "sequential": True}
+    assert d["plugins"] == {
+        "enabled": [],
+        "disabled": [],
+        "settings": {},
+        "registry_url": "",
+    }
+
+
+def test_config_to_dict_full_plugins_all_fields() -> None:
+    """full=True always shows all plugin sub-keys."""
+    cfg = AppConfig(
+        plugins=PluginsConfig(enabled=["youtube"]),
+    )
+    with patch("reeln.core.plugin_config.merge_all_plugin_defaults", return_value={}):
+        d = config_to_dict(cfg, full=True)
+    assert d["plugins"]["enabled"] == ["youtube"]
+    assert d["plugins"]["disabled"] == []
+    assert d["plugins"]["settings"] == {}
+    assert d["plugins"]["registry_url"] == ""
+
+
+def test_config_to_dict_full_merges_plugin_schema_defaults() -> None:
+    """full=True merges plugin config_schema defaults into settings."""
+    cfg = AppConfig(
+        plugins=PluginsConfig(
+            enabled=["google"],
+            settings={"google": {"category_id": "20"}},
+        ),
+    )
+    merged = {"google": {"category_id": "20", "create_livestream": False, "upload_video": False}}
+    with patch("reeln.core.plugin_config.merge_all_plugin_defaults", return_value=merged) as mock_merge:
+        d = config_to_dict(cfg, full=True)
+    mock_merge.assert_called_once_with(["google"], {"google": {"category_id": "20"}})
+    assert d["plugins"]["settings"]["google"]["create_livestream"] is False
+    assert d["plugins"]["settings"]["google"]["upload_video"] is False
+    assert d["plugins"]["settings"]["google"]["category_id"] == "20"
+
+
+def test_config_to_dict_not_full_skips_plugin_defaults() -> None:
+    """full=False does not call merge_all_plugin_defaults."""
+    cfg = AppConfig(
+        plugins=PluginsConfig(
+            enabled=["google"],
+            settings={"google": {"category_id": "20"}},
+        ),
+    )
+    d = config_to_dict(cfg, full=False)
+    # Should only have what was explicitly set
+    assert d["plugins"]["settings"] == {"google": {"category_id": "20"}}
 
 
 def test_dict_to_config_with_orchestration() -> None:

@@ -20,6 +20,26 @@
       "min_reeln_version": "0.0.19",
       "author": "StreamnDad",
       "license": "AGPL-3.0"
+    },
+    {
+      "name": "meta",
+      "package": "reeln-plugin-meta",
+      "description": "Meta platform integration — Facebook Live, Instagram, and Threads",
+      "capabilities": ["hook:ON_GAME_INIT"],
+      "homepage": "https://github.com/StreamnDad/reeln-plugin-meta",
+      "min_reeln_version": "0.0.19",
+      "author": "StreamnDad",
+      "license": "AGPL-3.0"
+    },
+    {
+      "name": "openai",
+      "package": "reeln-plugin-openai",
+      "description": "OpenAI-powered LLM integration — livestream metadata, game thumbnails, and translation",
+      "capabilities": ["hook:ON_GAME_INIT"],
+      "homepage": "https://github.com/StreamnDad/reeln-plugin-openai",
+      "min_reeln_version": "0.0.19",
+      "author": "StreamnDad",
+      "license": "AGPL-3.0"
     }
   ]
 }

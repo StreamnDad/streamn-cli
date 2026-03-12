@@ -120,8 +120,19 @@ def load_enabled_plugins(
             plugin = load_plugin(name, config=cfg)
             loaded[name] = plugin
             log.info("Loaded plugin: %s", name)
-        except PluginError:
-            log.warning("Failed to load plugin %s, skipping", name, exc_info=True)
+        except PluginError as exc:
+            if "not found" in str(exc).lower():
+                log.debug(
+                    "Plugin %s is not installed, skipping: %s",
+                    name,
+                    exc,
+                )
+            else:
+                log.warning(
+                    "Failed to load plugin %s, skipping",
+                    name,
+                    exc_info=True,
+                )
 
     return loaded
 

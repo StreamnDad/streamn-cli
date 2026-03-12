@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import subprocess
 from pathlib import Path
+from typing import Any
 from unittest.mock import patch
 
 import pytest
@@ -1044,6 +1045,66 @@ def test_init_game_persists_livestreams(tmp_path: Path) -> None:
 
     state = load_game_state(game_dir)
     assert state.livestreams == {"google": "https://youtube.com/live/abc123"}
+
+
+def test_init_game_emits_on_game_ready(tmp_path: Path) -> None:
+    """ON_GAME_READY fires after ON_GAME_INIT with shared context."""
+    emitted: list[HookContext] = []
+    get_registry().register(Hook.ON_GAME_READY, emitted.append)
+
+    info = GameInfo(date="2026-02-26", home_team="a", away_team="b", sport="hockey")
+    init_game(tmp_path, info)
+
+    assert len(emitted) == 1
+    assert emitted[0].hook is Hook.ON_GAME_READY
+    assert "game_dir" in emitted[0].data
+    assert "game_info" in emitted[0].data
+
+
+def test_init_game_on_game_ready_shares_context(tmp_path: Path) -> None:
+    """Data written to shared during ON_GAME_INIT is visible in ON_GAME_READY."""
+    ready_shared: list[dict[str, Any]] = []
+
+    def init_handler(ctx: HookContext) -> None:
+        ctx.shared["game_image"] = "/tmp/thumbnail.png"
+
+    def ready_handler(ctx: HookContext) -> None:
+        ready_shared.append(dict(ctx.shared))
+
+    get_registry().register(Hook.ON_GAME_INIT, init_handler)
+    get_registry().register(Hook.ON_GAME_READY, ready_handler)
+
+    info = GameInfo(date="2026-02-26", home_team="a", away_team="b", sport="hockey")
+    init_game(tmp_path, info)
+
+    assert len(ready_shared) == 1
+    assert ready_shared[0]["game_image"] == "/tmp/thumbnail.png"
+
+
+def test_init_game_dry_run_no_game_ready_hook(tmp_path: Path) -> None:
+    emitted: list[HookContext] = []
+    get_registry().register(Hook.ON_GAME_READY, emitted.append)
+
+    info = GameInfo(date="2026-02-26", home_team="a", away_team="b", sport="hockey")
+    init_game(tmp_path, info, dry_run=True)
+
+    assert len(emitted) == 0
+
+
+def test_init_game_on_game_ready_livestreams_persisted(tmp_path: Path) -> None:
+    """Livestream URLs updated during ON_GAME_READY are persisted to game.json."""
+
+    def ready_handler(ctx: HookContext) -> None:
+        ctx.shared["livestreams"] = ctx.shared.get("livestreams", {})
+        ctx.shared["livestreams"]["google"] = "https://youtube.com/live/updated"
+
+    get_registry().register(Hook.ON_GAME_READY, ready_handler)
+
+    info = GameInfo(date="2026-02-26", home_team="a", away_team="b", sport="hockey")
+    game_dir, _ = init_game(tmp_path, info)
+
+    state = load_game_state(game_dir)
+    assert state.livestreams == {"google": "https://youtube.com/live/updated"}
 
 
 def test_init_game_no_livestreams_no_extra_save(tmp_path: Path) -> None:

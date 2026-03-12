@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.0.30] - 2026-03-11
+
+### Added
+- `ON_GAME_READY` hook — fires after `ON_GAME_INIT` with shared context, enabling cross-plugin data consumption (e.g. OpenAI generates thumbnail during init, Google updates livestream during ready)
+- `config show` now displays the full resolved configuration including all default values and plugin schema defaults
+- Plugin registry entries for `meta` (Facebook Live/Instagram/Threads) and `openai` (LLM-powered metadata/thumbnails/translation)
+
+### Fixed
+- PyPI Documentation link now points to correct URL (`reeln-cli.readthedocs.io`)
+
+### Changed
+- Plugins that are not installed log at debug level instead of warning with traceback
+
 ## [0.0.29] - 2026-03-06
 
 ### Added

@@ -7,6 +7,7 @@ from unittest.mock import MagicMock, patch
 from reeln.core.plugin_config import (
     extract_schema,
     extract_schema_by_name,
+    merge_all_plugin_defaults,
     seed_defaults,
     validate_plugin_settings,
 )
@@ -229,3 +230,77 @@ class TestValidatePluginSettings:
         schema = PluginConfigSchema(fields=(ConfigField(name="api_key", field_type="str", required=True),))
         issues = validate_plugin_settings("p", {"api_key": "abc"}, schema)
         assert issues == []
+
+
+# ---------------------------------------------------------------------------
+# merge_all_plugin_defaults
+# ---------------------------------------------------------------------------
+
+
+class TestMergeAllPluginDefaults:
+    def _schema(self) -> PluginConfigSchema:
+        return PluginConfigSchema(
+            fields=(
+                ConfigField(name="enabled", field_type="bool", default=False),
+                ConfigField(name="timeout", field_type="int", default=30),
+            )
+        )
+
+    def test_merges_defaults_for_installed_plugin(self) -> None:
+        with patch(
+            "reeln.core.plugin_config.extract_schema_by_name",
+            return_value=self._schema(),
+        ):
+            result = merge_all_plugin_defaults(["myplugin"], {})
+        assert result == {"myplugin": {"enabled": False, "timeout": 30}}
+
+    def test_preserves_existing_settings(self) -> None:
+        existing = {"myplugin": {"timeout": 60}}
+        with patch(
+            "reeln.core.plugin_config.extract_schema_by_name",
+            return_value=self._schema(),
+        ):
+            result = merge_all_plugin_defaults(["myplugin"], existing)
+        assert result["myplugin"]["timeout"] == 60
+        assert result["myplugin"]["enabled"] is False
+
+    def test_skips_plugins_without_schema(self) -> None:
+        with patch(
+            "reeln.core.plugin_config.extract_schema_by_name",
+            return_value=None,
+        ):
+            result = merge_all_plugin_defaults(["noschemaplugin"], {"other": {"k": "v"}})
+        assert result == {"other": {"k": "v"}}
+
+    def test_multiple_plugins(self) -> None:
+        schema_a = PluginConfigSchema(
+            fields=(ConfigField(name="flag_a", field_type="bool", default=True),)
+        )
+        schema_b = PluginConfigSchema(
+            fields=(ConfigField(name="flag_b", field_type="bool", default=False),)
+        )
+
+        def _mock_schema(name: str) -> PluginConfigSchema | None:
+            return {"a": schema_a, "b": schema_b}.get(name)
+
+        with patch(
+            "reeln.core.plugin_config.extract_schema_by_name",
+            side_effect=_mock_schema,
+        ):
+            result = merge_all_plugin_defaults(["a", "b"], {})
+        assert result["a"]["flag_a"] is True
+        assert result["b"]["flag_b"] is False
+
+    def test_does_not_mutate_input(self) -> None:
+        existing = {"myplugin": {"timeout": 60}}
+        original = {"myplugin": {"timeout": 60}}
+        with patch(
+            "reeln.core.plugin_config.extract_schema_by_name",
+            return_value=self._schema(),
+        ):
+            merge_all_plugin_defaults(["myplugin"], existing)
+        assert existing == original
+
+    def test_empty_enabled_list(self) -> None:
+        result = merge_all_plugin_defaults([], {"other": {"k": "v"}})
+        assert result == {"other": {"k": "v"}}
