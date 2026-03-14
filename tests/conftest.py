@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Generator
+from unittest.mock import patch
 
 import pytest
 from typer.testing import CliRunner
@@ -28,3 +30,15 @@ def _reset_hook_registry() -> None:
     from reeln.plugins.registry import reset_registry
 
     reset_registry()
+
+
+@pytest.fixture(autouse=True)
+def _no_real_plugins() -> Generator[None, None, None]:
+    """Prevent real plugins from loading during tests.
+
+    Without this, activate_plugins() loads plugins from the user's real
+    config (e.g. google with create_livestream=true), causing side effects
+    like creating actual YouTube livestreams on every test run.
+    """
+    with patch("reeln.plugins.loader.load_enabled_plugins", return_value={}):
+        yield
