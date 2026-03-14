@@ -517,7 +517,6 @@ def test_register_plugin_hooks_with_allowed_hooks_explicit_register() -> None:
 
 def test_activate_plugins_enforce_hooks_disabled() -> None:
     """When enforce_hooks=False, all hooks are allowed (no registry fetch)."""
-    registry = HookRegistry()
     plugin = _AutoDiscoverPlugin()
     ep = _make_entry_point("auto", type(plugin))
 

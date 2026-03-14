@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.0.31] - 2026-03-13
+
 ### Added
 - `ON_POST_GAME_FINISH` hook — fires after `ON_GAME_FINISH` with shared context, enabling cross-plugin data consumption at game finish (mirrors `ON_GAME_INIT` → `ON_GAME_READY` pattern)
 - `--log-level` CLI option and `REELN_LOG_LEVEL` env var to control log verbosity (default: WARNING)

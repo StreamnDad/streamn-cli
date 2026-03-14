@@ -70,7 +70,7 @@ class FilteredRegistry(HookRegistry):
         self._allowed = allowed_hooks
         self._plugin_name = plugin_name
 
-    def register(self, hook: Hook, handler: HandlerFunc) -> None:  # type: ignore[override]
+    def register(self, hook: Hook, handler: HandlerFunc) -> None:
         """Register a handler only if the hook is in the allowed set."""
         if hook not in self._allowed:
             log.warning(
